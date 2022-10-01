@@ -29,8 +29,7 @@ let persons = [
 ]
 
 const generateId = () => {
-  const maxId = persons.length > 0 ? Math.max(...persons.map(n => n.id)) : 0
-  return maxId + 1
+  return Math.floor(Math.random() * (2 ** 24))
 }
 
 const app = express()
@@ -76,6 +75,12 @@ app.post('/api/persons', (request, response) => {
     })
   }
 
+  if (!body.number) {
+    return response.status(400).json({
+      error: 'number missing from request'
+    })
+  }
+
   if (persons.some(p => p.name === body.name)) {
     return response.status(400).json({
       error: 'name already exists, use PUT /api/persons/id to update'
@@ -84,7 +89,7 @@ app.post('/api/persons', (request, response) => {
 
   const person = {
     name: body.name,
-    number: body.number || "",
+    number: body.number,
     id: generateId(),
   }
 
