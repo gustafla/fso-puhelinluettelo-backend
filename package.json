@@ -1,0 +1,27 @@
+{
+  "name": "fso-puhelinluettelo-backend",
+  "version": "0.1.0",
+  "description": "Week 3 fullstackopen.com",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gustafla/fso-puhelinluettelo-backend.git"
+  },
+  "author": "Lauri Gustafsson",
+  "license": "GPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/gustafla/fso-puhelinluettelo-backend/issues"
+  },
+  "homepage": "https://github.com/gustafla/fso-puhelinluettelo-backend#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
