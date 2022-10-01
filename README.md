@@ -1,5 +1,5 @@
 # Full Stack Open Phonebook Backend Exercise
 
-#[Try it live!](https://still-violet-8886.fly.dev/)
+# [Try it live!](https://still-violet-8886.fly.dev/)
 
-## [My main repository](/gustafla/fullstackopen)
+## [My main repository](https://github.com/gustafla/fullstackopen)
