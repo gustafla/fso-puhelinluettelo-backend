@@ -36,6 +36,12 @@ const generateId = () => {
 const app = express()
 app.use(express.json())
 
+app.get('/info', (request, response) => {
+  console.log(request.method, request.url)
+  response.writeHead(200, { 'Content-Type': 'text/plain' })
+  response.end(`Phonebook has info for ${persons.length} people\n\n${new Date()}\n`)
+})
+
 app.get('/api/persons', (request, response) => {
   console.log(request.method, request.url)
   response.json(persons)
