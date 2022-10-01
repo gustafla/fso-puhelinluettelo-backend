@@ -39,6 +39,7 @@ app.use(cors())
 app.use(express.json())
 morgan.token('body', (request) => request.method === 'POST' ? JSON.stringify(request.body) : null)
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
+app.use(express.static('build'))
 
 app.get('/info', (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/plain' })
