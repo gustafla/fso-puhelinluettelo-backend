@@ -1,4 +1,5 @@
 const express = require('express')
+const morgan = require('morgan')
 
 let persons = [
   {
@@ -34,20 +35,19 @@ const generateId = () => {
 
 const app = express()
 app.use(express.json())
+morgan.token('body', (request) => request.method === 'POST' ? JSON.stringify(request.body) : null)
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 app.get('/info', (request, response) => {
-  console.log(request.method, request.url)
   response.writeHead(200, { 'Content-Type': 'text/plain' })
   response.end(`Phonebook has info for ${persons.length} people\n\n${new Date()}\n`)
 })
 
 app.get('/api/persons', (request, response) => {
-  console.log(request.method, request.url)
   response.json(persons)
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  console.log(request.method, request.url)
   const id = Number(request.params.id)
   const person = persons.find(person => person.id === id)
   if (person) {
@@ -58,7 +58,6 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  console.log(request.method, request.url)
   const id = Number(request.params.id)
   persons = persons.filter(person => person.id !== id)
 
@@ -66,7 +65,6 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-  console.log(request.method, request.url)
   const body = request.body
 
   if (!body.name) {
@@ -95,7 +93,6 @@ app.post('/api/persons', (request, response) => {
 
   persons = persons.concat(person)
 
-  console.log(person)
   response.json(person)
 })
 
