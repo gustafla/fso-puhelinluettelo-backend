@@ -13,12 +13,16 @@ mongoose.connect(url)
 const personSchema = new mongoose.Schema({
   name: {
     type: String,
-    minlength: 3,
-    required: true
+    minlength: [3, 'Name must be at least 3 characters'],
+    required: [true, 'Name required'],
   },
   number: {
     type: String,
-    required: true,
+    validate: {
+      validator: v => /^(\d{2}-\d{6,}|\d{3}-\d{5,})/.test(v),
+      message: 'Phone number must be formatted like 00-1234567 or 111-22334455'
+    },
+    required: [true, 'Phone number required'],
   }
 })
 
