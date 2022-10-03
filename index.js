@@ -45,12 +45,17 @@ app.put('/api/persons/:id', (request, response, next) => {
     })
   }
 
-  Person.findByIdAndUpdate(request.params.id, { $set: { number: body.number } }, { new: true }).then(person => {
-    if (person) {
-      return response.json(person)
-    }
-    next()
-  }).catch(error => next(error))
+  Person.findByIdAndUpdate(
+    request.params.id,
+    { $set: { number: body.number } },
+    { new: true, runValidators: true, context: 'query' }
+  )
+    .then(person => {
+      if (person) {
+        return response.json(person)
+      }
+      next()
+    }).catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
@@ -98,7 +103,7 @@ app.post('/api/persons', (request, response, next) => {
 
 // 404 handler middleware
 const unknownEndpoint = (_request, response) => {
-  response.status(404).json({ error: 'unknown endpoint' })
+  response.status(404).json({ error: 'not found' })
 }
 
 app.use(unknownEndpoint)
@@ -109,6 +114,8 @@ const errorHandler = (error, _request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).json({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
