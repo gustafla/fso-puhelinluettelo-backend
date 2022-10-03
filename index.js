@@ -6,45 +6,37 @@ const cors = require('cors')
 const Person = require('./models/person')
 
 const app = express()
-app.use(cors())
+
+// JSON, CORS, logging, static middlewares
 app.use(express.json())
+app.use(cors())
 morgan.token('body', (request) => request.method === 'POST' ? JSON.stringify(request.body) : null)
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 app.use(express.static('build'))
 
-app.get('/info', (_request, response) => {
+app.get('/info', (_request, response, next) => {
   Person.find({}).then(result => {
     response.writeHead(200, { 'Content-Type': 'text/plain' })
     response.end(`Phonebook has info for ${result.length} people\n\n${new Date()}\n`)
-  }).catch(error => {
-    console.log(error)
-    response.status(500).end()
-  })
+  }).catch(error => next(error))
 })
 
-app.get('/api/persons', (_request, response) => {
+app.get('/api/persons', (_request, response, next) => {
   Person.find({}).then(result => {
     response.json(result)
-  }).catch(error => {
-    console.log(error)
-    response.status(500).end()
-  })
+  }).catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id).then(person => {
     if (person) {
-      response.json(person)
-    } else {
-      response.status(404).end()
+      return response.json(person)
     }
-  }).catch(error => {
-    console.log(error)
-    response.status(400).json({ error: 'malformatted id' })
-  })
+    next()
+  }).catch(error => next(error))
 })
 
-app.put('/api/persons/:id', (request, response) => {
+app.put('/api/persons/:id', (request, response, next) => {
   const body = request.body
 
   if (!body.number) {
@@ -53,29 +45,22 @@ app.put('/api/persons/:id', (request, response) => {
     })
   }
 
-  Person.findByIdAndUpdate(request.params.id, { number: body.number }).then(person => {
+  Person.findByIdAndUpdate(request.params.id, { $set: { number: body.number } }, { new: true }).then(person => {
     if (person) {
-      response.json(person)
-    } else {
-      response.status(404).end()
+      return response.json(person)
     }
-  }).catch(error => {
-    console.log(error)
-    response.status(400).json({ error: 'malformatted id' })
-  })
+    next()
+  }).catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
-  Person.findByIdAndDelete(request.params.id).then(deleted => {
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndRemove(request.params.id).then(deleted => {
     console.log('deleted', deleted)
     response.status(204).end()
-  }).catch(error => {
-    console.log(error)
-    response.status(400).json({ error: 'malformatted id' })
-  })
+  }).catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if (!body.name) {
@@ -106,16 +91,30 @@ app.post('/api/persons', (request, response) => {
 
       person.save().then(savedPerson => {
         response.json(savedPerson)
-      }).catch(error => {
-        console.log(error)
-        response.status(500).end()
-      })
+      }).catch(error => next(error))
     }
-  }).catch(error => {
-    console.log(error)
-    response.status(500).end()
-  })
+  }).catch(error => next(error))
 })
+
+// 404 handler middleware
+const unknownEndpoint = (_request, response) => {
+  response.status(404).json({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+// Error handler middleware
+const errorHandler = (error, _request, response, next) => {
+  console.error('errorHandler:', error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).json({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
